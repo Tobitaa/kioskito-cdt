@@ -409,6 +409,6 @@ window.addEventListener("load", () => {
 
     // Auto-verificar cuando el input tiene suficiente longitud
     pinInput.addEventListener("input", () => {
-        if (pinInput.value.length >= 7) verificarPin();
+        if (pinInput.value.length >= 8) verificarPin();
     });
 });
