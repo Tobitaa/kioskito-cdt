@@ -234,13 +234,11 @@ async function consultarDeuda(nombre) {
     if (!sesionActiva || !db) return;
     resetearTimerInactividad();
 
-    const inputDeuda = document.getElementById("monto-a-pagar");
     const badge = document.getElementById("deuda-badge");
     const badgeAmount = document.getElementById("deuda-amount");
 
     if (!nombre) {
-        inputDeuda.value = "";
-        badge.classList.remove("visible");
+        badge.classList.remove("visible", "rojo", "verde");
         return;
     }
 
@@ -250,14 +248,11 @@ async function consultarDeuda(nombre) {
         return;
     }
 
-    inputDeuda.placeholder = "Consultando…";
-
     try {
         const userRef = db.collection("usuarios").doc(nombre);
         const doc = await userRef.get();
 
         const deuda = doc.exists ? (doc.data().deuda || 0) : 0;
-        inputDeuda.value = deuda;
 
         badgeAmount.textContent = `$${deuda.toLocaleString("es-CL")}`;
         badge.classList.add("visible");
@@ -332,7 +327,7 @@ async function validarPago() {
     const btn = document.querySelector("#seccion-pagar .btn-submit");
     const nombre = sanitizarTexto(document.getElementById("nombre-pagar").value);
     const montoStr = document.getElementById("monto-pagado").value;
-    const deudaActualStr = document.getElementById("monto-a-pagar").value;
+    const deudaActualStr = document.getElementById("deuda-amount").textContent.replace(/[$\.]/g, "").replace(/\./g, "") || "0";
 
     if (!nombre) {
         alert("Por favor selecciona un nombre.");
