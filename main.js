@@ -12,7 +12,7 @@
 // ── 1. CONTRASEÑA DE ACCESO ──────────────────────────────────
 // CAMBIA ESTA CONTRASEÑA antes de subir. No uses datos obvios.
 // Idealmente, usa Firebase Auth en su lugar.
-const HASH_CONTRASENA = "e3b0c44298fc1c149afb"; // SHA-256 parcial de tu contraseña real
+const HASH_CONTRASENA = "11dce0ae8ac8dc202d3d"; // SHA-256 parcial de tu contraseña real
 // INSTRUCCIÓN: Ve a https://emn178.github.io/online-tools/sha256.html
 // Escribe tu contraseña, copia los primeros 20 caracteres del hash y reemplaza arriba.
 // La contraseña REAL nunca queda guardada en el código.
