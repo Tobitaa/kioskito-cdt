@@ -10,12 +10,8 @@
 // ============================================================
 
 // ── 1. CONTRASEÑA DE ACCESO ──────────────────────────────────
-// CAMBIA ESTA CONTRASEÑA antes de subir. No uses datos obvios.
-// Idealmente, usa Firebase Auth en su lugar.
-const HASH_CONTRASENA = "11dce0ae8ac8dc202d3d"; // SHA-256 parcial de tu contraseña real
-// INSTRUCCIÓN: Ve a https://emn178.github.io/online-tools/sha256.html
-// Escribe tu contraseña, copia los primeros 20 caracteres del hash y reemplaza arriba.
-// La contraseña REAL nunca queda guardada en el código.
+const HASH_CONTRASENA = "11dce0ae8ac8dc202d3d";
+
 
 // ── 2. LÍMITES DE SEGURIDAD ──────────────────────────────────
 const MAX_INTENTOS = 5;           // Intentos antes de bloquear
@@ -104,6 +100,7 @@ async function verificarPin() {
         document.getElementById("pin-screen").style.display = "none";
         document.getElementById("app-screen").classList.add("visible");
         iniciarTimerSesion();
+        poblarMenusDesplegables();
         inicializarFirebase();
     } else {
         intentosFallidos++;
@@ -178,14 +175,12 @@ function resetearTimerInactividad() {
 
 function inicializarFirebase() {
     try {
-        // firebaseConfig viene de firebase-config.js (no subir a Git)
         if (typeof firebaseConfig === "undefined") {
             alert("Error: No se encontró firebase-config.js");
             return;
         }
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
-        poblarMenusDesplegables();
     } catch (error) {
         // Si ya estaba inicializado (ej: recarga sin cerrar sesión)
         if (error.code === "app/duplicate-app") {
