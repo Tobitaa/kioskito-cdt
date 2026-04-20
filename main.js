@@ -259,12 +259,10 @@ async function consultarDeuda(nombre) {
         const deuda = doc.exists ? (doc.data().deuda || 0) : 0;
         inputDeuda.value = deuda;
 
-        if (deuda > 0) {
-            badgeAmount.textContent = `$${deuda.toLocaleString("es-CL")}`;
-            badge.classList.add("visible");
-        } else {
-            badge.classList.remove("visible");
-        }
+        badgeAmount.textContent = `$${deuda.toLocaleString("es-CL")}`;
+        badge.classList.add("visible");
+        badge.classList.remove("rojo", "verde");
+        badge.classList.add(deuda > 0 ? "rojo" : "verde");
     } catch (error) {
         console.error("Error al consultar deuda:", error);
         inputDeuda.placeholder = "Error de conexión";

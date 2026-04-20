@@ -199,14 +199,24 @@
 
         .deuda-badge {
             display: none;
-            background: rgba(239,68,68,0.12);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #fca5a5;
             border-radius: var(--radius);
             padding: 10px 14px;
             font-size: 0.88rem;
             margin-bottom: 16px;
             text-align: center;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .deuda-badge.rojo {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
+        }
+
+        .deuda-badge.verde {
+            background: rgba(34,197,94,0.12);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #86efac;
         }
 
         .deuda-badge.visible { display: block; }
@@ -380,10 +390,6 @@
             Deuda actual: <span class="amount" id="deuda-amount">—</span>
         </div>
 
-        <div class="form-group">
-            <label for="monto-a-pagar">Deuda registrada ($)</label>
-            <input type="number" id="monto-a-pagar" readonly placeholder="Selecciona un nombre…">
-        </div>
         <div class="form-group">
             <label for="monto-pagado">Monto a pagar ($)</label>
             <input type="number" id="monto-pagado" placeholder="Ej: 5000" min="1" max="9999999" step="1">
