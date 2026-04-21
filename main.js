@@ -32,7 +32,7 @@ let db = null;
 const listaIntegrantes = [
     "Cristóbal José Valdés Pezo",
     "Vicente Ignacio Cuitiño Sage",
-    "Diego Soto",
+    "Felipe Torres Palomino",
     "Ana Rojas",
     "Carlos Muñoz"
 ];
@@ -181,6 +181,7 @@ function inicializarFirebase() {
         }
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
+        guardarRespaldoSemanal();
     } catch (error) {
         // Si ya estaba inicializado (ej: recarga sin cerrar sesión)
         if (error.code === "app/duplicate-app") {
@@ -196,22 +197,28 @@ function inicializarFirebase() {
 // ── 8. INTERFAZ ───────────────────────────────────────────────
 
 function poblarMenusDesplegables() {
-    const menuComprar = document.getElementById("nombre-comprar");
-    const menuPagar = document.getElementById("nombre-pagar");
+    const datalistComprar = document.getElementById("lista-nombres");
+    const datalistPagar = document.getElementById("lista-nombres-pagar");
 
-    // Limpia opciones anteriores (seguridad: evita duplicados si se llama dos veces)
-    menuComprar.innerHTML = '<option value="">Selecciona un nombre…</option>';
-    menuPagar.innerHTML = '<option value="">Selecciona un nombre…</option>';
+    datalistComprar.innerHTML = "";
+    datalistPagar.innerHTML = "";
 
     listaIntegrantes.forEach(nombre => {
-        const crearOpcion = () => {
-            const opt = document.createElement("option");
-            opt.value = nombre;
-            opt.textContent = nombre; // textContent es más seguro que innerHTML
-            return opt;
-        };
-        menuComprar.appendChild(crearOpcion());
-        menuPagar.appendChild(crearOpcion());
+        const opt1 = document.createElement("option");
+        opt1.value = nombre;
+        datalistComprar.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = nombre;
+        datalistPagar.appendChild(opt2);
+    });
+
+    // Consultar deuda al escribir en el campo de pagar
+    document.getElementById("nombre-pagar").addEventListener("input", function() {
+        if (validarIntegrante(this.value)) consultarDeuda(this.value);
+        else {
+            document.getElementById("deuda-badge").classList.remove("visible", "rojo", "verde");
+        }
     });
 }
 
@@ -221,11 +228,14 @@ function mostrarSeccion(opcion, btnEl) {
 
     document.getElementById("seccion-comprar").classList.remove("active");
     document.getElementById("seccion-pagar").classList.remove("active");
+    document.getElementById("seccion-top").classList.remove("active");
 
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     if (btnEl) btnEl.classList.add("active");
 
     document.getElementById(`seccion-${opcion}`).classList.add("active");
+
+    if (opcion === 'top') cargarTopDeudores();
 }
 
 // ── 9. BASE DE DATOS ──────────────────────────────────────────
@@ -382,6 +392,79 @@ async function validarPago() {
     } finally {
         btn.disabled = false;
         btn.textContent = "Registrar Pago";
+    }
+}
+
+async function cargarTopDeudores() {
+    if (!sesionActiva || !db) return;
+    resetearTimerInactividad();
+
+    const lista = document.getElementById("top-lista");
+    lista.innerHTML = '<div class="top-vacio">Cargando...</div>';
+
+    try {
+        const resultados = await Promise.all(
+            listaIntegrantes.map(async nombre => {
+                const doc = await db.collection("usuarios").doc(nombre).get();
+                const deuda = doc.exists ? (doc.data().deuda || 0) : 0;
+                return { nombre, deuda };
+            })
+        );
+
+        resultados.sort((a, b) => b.deuda - a.deuda);
+
+        const clasesPuesto = ["primero", "segundo", "tercero"];
+        const emojis = ["🥇", "🥈", "🥉"];
+
+        lista.innerHTML = resultados.map((item, i) => {
+            const clase = clasesPuesto[i] || "";
+            const puesto = emojis[i] || `${i + 1}.`;
+            const enPaz = item.deuda <= 0;
+            return `
+                <div class="top-item ${clase}">
+                    <span class="puesto">${puesto}</span>
+                    <span class="nombre">${item.nombre}</span>
+                    <span class="monto ${enPaz ? 'en-paz' : ''}">
+                        $${item.deuda.toLocaleString("es-CL")}
+                    </span>
+                </div>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("Error cargando top deudores:", error);
+        lista.innerHTML = '<div class="top-vacio">Error al cargar datos.</div>';
+    }
+}
+
+async function guardarRespaldoSemanal() {
+    if (!sesionActiva || !db) return;
+
+    const hoy = new Date();
+    if (hoy.getDay() !== 0) return; // 0 = domingo, si no es domingo no hace nada
+
+    try {
+        const resultados = await Promise.all(
+            listaIntegrantes.map(async nombre => {
+                const doc = await db.collection("usuarios").doc(nombre).get();
+                const deuda = doc.exists ? (doc.data().deuda || 0) : 0;
+                return { nombre, deuda };
+            })
+        );
+
+        const respaldo = {};
+        resultados.forEach(item => {
+            respaldo[item.nombre] = item.deuda;
+        });
+
+        await db.collection("respaldos").doc("semana-actual").set({
+            fecha: hoy.toISOString(),
+            datos: respaldo
+        });
+
+        console.log("Respaldo semanal guardado:", hoy.toISOString());
+    } catch (error) {
+        console.error("Error guardando respaldo:", error);
     }
 }
 

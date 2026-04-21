@@ -129,6 +129,10 @@
             margin-bottom: 28px;
         }
 
+        .button-group .btn-top {
+            grid-column: 1 / -1;
+        }
+
         .tab-btn {
             padding: 11px 16px;
             border: 1px solid var(--border);
@@ -154,6 +158,60 @@
             color: var(--accent-blue);
         }
 
+        .tab-btn.active.btn-top {
+            background: rgba(245,158,11,0.15);
+            border-color: var(--accent-amber);
+            color: var(--accent-amber);
+        }
+
+        .top-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .top-item .puesto {
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 28px;
+            color: var(--text-muted);
+        }
+
+        .top-item.primero .puesto { color: #fbbf24; }
+        .top-item.segundo .puesto { color: #9ca3af; }
+        .top-item.tercero .puesto { color: #b45309; }
+
+        .top-item .nombre {
+            flex: 1;
+            padding: 0 12px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-item .monto {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fca5a5;
+        }
+
+        .top-item .monto.en-paz { color: #86efac; }
+
+        .top-vacio {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding: 24px 0;
+        }
+
         .tab-btn:not(.active):hover {
             border-color: #3e4461;
             color: var(--text);
@@ -174,7 +232,7 @@
             letter-spacing: 0.05em;
         }
 
-        select, input[type="number"] {
+        select, input[type="number"], input[type="text"] {
             width: 100%;
             padding: 11px 14px;
             background: var(--bg);
@@ -185,11 +243,11 @@
             font-size: 0.95rem;
             outline: none;
             transition: border-color 0.2s;
-            appearance: none;           /* ← estándar moderno */
-            -webkit-appearance: none;   /* ← compatibilidad Safari/iOS */
+            appearance: none;
+            -webkit-appearance: none;
         }
 
-        select:focus, input[type="number"]:focus { border-color: var(--accent-blue); }
+        select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
         select option { background: var(--surface-2); }
 
         input[readonly] {
@@ -339,6 +397,20 @@
     >
     <div id="pin-error"></div>
     <div id="pin-attempts"></div>
+    <button onclick="verificarPin()" style="
+        width: 100%;
+        margin-top: 16px;
+        padding: 12px;
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Entrar</button>
 </div>
 
 <!-- PANTALLA: Bloqueado por intentos -->
@@ -360,15 +432,15 @@
     <div class="button-group">
         <button class="tab-btn btn-comprar active" onclick="mostrarSeccion('comprar', this)">Comprar</button>
         <button class="tab-btn btn-pagar" onclick="mostrarSeccion('pagar', this)">Pagar</button>
+        <button class="tab-btn btn-top" onclick="mostrarSeccion('top', this)">🏆 Top</button>
     </div>
 
     <!-- Formulario: Comprar -->
     <div id="seccion-comprar" class="form-section active">
         <div class="form-group">
             <label for="nombre-comprar">Persona</label>
-            <select id="nombre-comprar">
-                <option value="">Selecciona un nombre…</option>
-            </select>
+            <input type="text" id="nombre-comprar" placeholder="Escribe o selecciona un nombre…" autocomplete="off" list="lista-nombres">
+            <datalist id="lista-nombres"></datalist>
         </div>
         <div class="form-group">
             <label for="monto-gastado">Monto gastado ($)</label>
@@ -381,9 +453,8 @@
     <div id="seccion-pagar" class="form-section">
         <div class="form-group">
             <label for="nombre-pagar">Persona</label>
-            <select id="nombre-pagar" onchange="consultarDeuda(this.value)">
-                <option value="">Selecciona un nombre…</option>
-            </select>
+            <input type="text" id="nombre-pagar" placeholder="Escribe o selecciona un nombre…" autocomplete="off" list="lista-nombres-pagar">
+            <datalist id="lista-nombres-pagar"></datalist>
         </div>
 
         <div id="deuda-badge" class="deuda-badge">
@@ -400,6 +471,12 @@
         </div>
 
         <button class="btn-submit pago" onclick="validarPago()">Registrar Pago</button>
+    </div>
+
+    <!-- Formulario: Top Deudores -->
+    <div id="seccion-top" class="form-section">
+        <div id="top-lista"></div>
+        <button class="btn-submit" style="background: var(--accent-amber); color: #0a0e0a; margin-top: 8px;" onclick="cargarTopDeudores()">↻ Actualizar</button>
     </div>
 </div>
 
